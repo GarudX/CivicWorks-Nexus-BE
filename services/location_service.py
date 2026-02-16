@@ -104,6 +104,7 @@ class LocationService:
                     maps_url=self.google_maps_url(query),
                 )
             )
+            page_num += 1
         
         logger.info(f"Processed {len(results)} locations in development mode")
         return results
