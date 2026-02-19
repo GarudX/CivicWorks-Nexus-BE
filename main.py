@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyHeader
@@ -9,6 +10,17 @@ from utils.logger import logger
 settings = get_settings()
 
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("=" * 60)
+    logger.info("Map Rendering API Starting...")
+    logger.info(f"Environment: {settings.ENVIRONMENT}")
+    logger.info(f"Model: {settings.MODEL}")
+    logger.info(f"OpenAI API Key configured: {bool(settings.OPENAI_API_KEY)}")
+    logger.info("=" * 60)
+    yield
+    logger.info("Map Rendering API Shutting Down...")
 
 app = FastAPI(
     title="Map Rendering API",
@@ -31,7 +43,8 @@ app = FastAPI(
     """,
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 app.add_middleware(
@@ -47,19 +60,6 @@ app.add_middleware(APIKeyMiddleware)
 
 app.include_router(health_router)
 app.include_router(location_router)
-
-@app.on_event("startup")
-async def startup_event():
-    logger.info("=" * 60)
-    logger.info("Map Rendering API Starting...")
-    logger.info(f"Environment: {settings.ENVIRONMENT}")
-    logger.info(f"Model: {settings.MODEL}")
-    logger.info(f"OpenAI API Key configured: {bool(settings.OPENAI_API_KEY)}")
-    logger.info("=" * 60)
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info("Map Rendering API Shutting Down...")
 
 if __name__ == "__main__":
     import uvicorn

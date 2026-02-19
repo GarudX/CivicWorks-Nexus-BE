@@ -2,23 +2,28 @@ import io
 import base64
 from typing import List, Tuple
 from PIL import Image
-import fitz
+import pypdfium2 as pdfium
 
 
 class PDFService:
     
     @staticmethod
     def pdf_to_images(pdf_bytes: bytes, zoom: float, limit: int) -> List[Tuple[int, Image.Image]]:
-        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-        mat = fitz.Matrix(zoom, zoom)
+        pdf = pdfium.PdfDocument(pdf_bytes)
         
         pages = []
-        for i in range(min(len(doc), limit)):
-            pix = doc[i].get_pixmap(matrix=mat, alpha=False)
-            img = Image.open(io.BytesIO(pix.tobytes("png"))).convert("RGB")
-            pages.append((i + 1, img))
+        scale = zoom
         
-        doc.close()
+        for i in range(min(len(pdf), limit)):
+            page = pdf[i]
+            pil_image = page.render(
+                scale=scale,
+                rotation=0,
+            ).to_pil()
+            pages.append((i + 1, pil_image.convert("RGB")))
+            page.close()
+        
+        pdf.close()
         return pages
     
     @staticmethod
