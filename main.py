@@ -49,7 +49,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "https://civic-works-nexus-fe.vercel.app",
+        "http://localhost:5172",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
