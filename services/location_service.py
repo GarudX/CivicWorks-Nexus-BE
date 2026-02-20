@@ -21,7 +21,7 @@ class LocationService:
     @staticmethod
     def google_maps_url(query: str) -> str:
         q = urllib.parse.quote(query or "")
-        return f"https://www.google.com/maps/dir/?api=1&destination={q}"
+        return f"https://www.google.com/maps/search/?api=1&destination={q}"
     
     @staticmethod
     def normalize_location_name(name: str) -> str:
